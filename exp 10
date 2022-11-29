@@ -1,0 +1,36 @@
+#include&lt;sys/types.h&gt;
+#include&lt;sys/socket.h&gt;
+#include&lt;net/if_arp.h&gt;
+#include&lt;sys/ioctl.h&gt;
+#include&lt;stdio.h&gt;
+#include&lt;unistd.h&gt;
+#include&lt;netinet/in.h&gt;
+#include&lt;arpa/inet.h&gt;
+int main(int argc,char *argv[])
+{
+struct sockaddr_in sin={0};
+struct arpreq myarp={{0}};
+unsigned char *ptr;
+
+Page | 40
+
+int sd;
+sin.sin_family=AF_INET;
+if(inet_aton(argv[1],&amp;sin.sin_addr)==0)
+{
+printf(&quot;Ip address Entered &#39;%s&#39; is not valid \n&quot;,argv[1]);
+exit(0);
+}
+memcpy(&amp;myarp.arp_pa,&amp;sin,sizeof(myarp.arp_pa));
+strcpy(myarp.arp_dev,&quot;eth0&quot;);
+sd=socket(AF_INET,SOCK_DGRAM,0);
+if(ioctl(sd,SIOCGARP,&amp;myarp)==1)
+{
+printf(&quot;No Entry in ARP Cache for &#39;%s&#39;&quot;,argv[1]);
+exit(0);
+}
+ptr=&amp;myarp.arp_ha.sa_data[0];
+printf(&quot;MAC Address For &#39;%s&#39; : &quot;,argv[1]);
+printf(&quot;%X:%X:%X:%X:%X:%X\n&quot;,*ptr,*(ptr+1),*(ptr+2),*(ptr+3),*(ptr+4),*(ptr+5),*(ptr+5));
+return 0;
+}
